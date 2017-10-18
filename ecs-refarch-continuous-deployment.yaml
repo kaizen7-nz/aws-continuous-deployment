@@ -11,7 +11,7 @@ Parameters:
 
   GitHubRepo:
     Type: String
-    Default: ecs-demo-php-simple-app
+    Default: TechemyLtd/bnc-market-cache-service
     Description: The repo name of the sample service.
 
   GitHubBranch:
@@ -59,7 +59,7 @@ Resources:
   DeploymentPipeline:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: https://s3.amazonaws.com/ecs-refarch-continuous-deployment/templates/deployment-pipeline.yaml
+      TemplateURL: https://raw.githubusercontent.com/alphafoobar/ecs-refarch-continuous-deployment/master/templates/deployment-pipeline.yaml
       Parameters:
         Cluster: !GetAtt Cluster.Outputs.ClusterName
         GitHubUser: !Ref GitHubUser
