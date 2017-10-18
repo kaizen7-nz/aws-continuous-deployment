@@ -149,13 +149,15 @@ Resources:
                 - TAG="$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | head -c 8)"
             build:
               commands:
+                - ./gradlew build
                 - docker build --tag "${REPOSITORY_URI}:${TAG}" .
             post_build:
               commands:
                 - docker push "${REPOSITORY_URI}:${TAG}"
                 - printf '{"tag":"%s"}' $TAG > build.json
           artifacts:
-            files: build.json
+            files: 
+              - build.json
       Environment:
         ComputeType: "BUILD_GENERAL1_SMALL"
         Image: "aws/codebuild/docker:1.12.1"
