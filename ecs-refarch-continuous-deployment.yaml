@@ -28,8 +28,7 @@ Parameters:
     Type: String
     Description: >
       Token for the user specified above. (https://github.com/settings/tokens)
-
-
+      
 
 Metadata:
   AWS::CloudFormation::Interface:
@@ -43,7 +42,7 @@ Metadata:
       GitHubToken:
         default: "Personal Access Token"
       S3TemplateBucket:
-        default: "cf-templates-foylpe06cqiq-ap-southeast-2"
+        default: "S3 Template Bucket"
     ParameterGroups:
       - Label:
           default: S3 Configuration
@@ -61,7 +60,7 @@ Resources:
   Cluster:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: https://raw.githubusercontent.com/alphafoobar/ecs-refarch-continuous-deployment/master/templates/ecs-cluster.yaml
+      TemplateURL: !Sub https://s3-ap-southeast-2.amazonaws.com/${S3TemplateBucket}/templates/ecs-cluster.yaml
       Parameters:
         SourceSecurityGroup: !GetAtt LoadBalancer.Outputs.SecurityGroup
         Subnets: !GetAtt VPC.Outputs.Subnets
@@ -70,7 +69,7 @@ Resources:
   DeploymentPipeline:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: https://raw.githubusercontent.com/alphafoobar/ecs-refarch-continuous-deployment/master/templates/deployment-pipeline.yaml
+      TemplateURL: !Sub https://s3-ap-southeast-2.amazonaws.com/${S3TemplateBucket}/templates/deployment-pipeline.yaml
       Parameters:
         Cluster: !GetAtt Cluster.Outputs.ClusterName
         GitHubUser: !Ref GitHubUser
@@ -83,7 +82,7 @@ Resources:
   LoadBalancer:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: https://raw.githubusercontent.com/alphafoobar/ecs-refarch-continuous-deployment/master/load-balancer.yaml
+      TemplateURL: !Sub https://s3-ap-southeast-2.amazonaws.com/${S3TemplateBucket}/templates/load-balancer.yaml
       Parameters:
         Subnets: !GetAtt VPC.Outputs.Subnets
         VpcId: !GetAtt VPC.Outputs.VpcId
@@ -91,7 +90,7 @@ Resources:
   VPC:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: https://raw.githubusercontent.com/alphafoobar/ecs-refarch-continuous-deployment/master/templates/vpc.yaml
+      TemplateURL: !Sub https://s3-ap-southeast-2.amazonaws.com/${S3TemplateBucket}/templates/vpc.yaml
       Parameters:
         Name: !Ref AWS::StackName
         VpcCIDR: 10.215.0.0/16
