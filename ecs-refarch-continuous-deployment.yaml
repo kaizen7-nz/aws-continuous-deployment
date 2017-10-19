@@ -1,7 +1,8 @@
 Description: >
-  This template illustrates how to use AWS CodeBuild and AWS CodePipeline to
+  This template uses AWS CodeBuild and AWS CodePipeline to
   achieve continuous deployment of source code from a GitHub repository via a
-  Docker container to an Amazon EC2 Container Service cluster.
+  Java Gradle build and then creates a Docker container 
+  to deploy on an Amazon EC2 Container Service cluster.
 
 
 Parameters:
@@ -45,12 +46,11 @@ Metadata:
           - GitHubUser
           - GitHubToken
 
-
 Resources:
   Cluster:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: https://s3.amazonaws.com/ecs-refarch-continuous-deployment/templates/ecs-cluster.yaml
+      TemplateURL: https://raw.githubusercontent.com/alphafoobar/ecs-refarch-continuous-deployment/master/templates/ecs-cluster.yaml
       Parameters:
         SourceSecurityGroup: !GetAtt LoadBalancer.Outputs.SecurityGroup
         Subnets: !GetAtt VPC.Outputs.Subnets
@@ -72,7 +72,7 @@ Resources:
   LoadBalancer:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: https://s3.amazonaws.com/ecs-refarch-continuous-deployment/templates/load-balancer.yaml
+      TemplateURL: https://raw.githubusercontent.com/alphafoobar/ecs-refarch-continuous-deployment/master/templates/load-balancer.yaml
       Parameters:
         Subnets: !GetAtt VPC.Outputs.Subnets
         VpcId: !GetAtt VPC.Outputs.VpcId
@@ -80,7 +80,7 @@ Resources:
   VPC:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: https://s3.amazonaws.com/ecs-refarch-continuous-deployment/templates/vpc.yaml
+      TemplateURL: https://raw.githubusercontent.com/alphafoobar/ecs-refarch-continuous-deployment/master/templates/vpc.yaml
       Parameters:
         Name: !Ref AWS::StackName
         VpcCIDR: 10.215.0.0/16
