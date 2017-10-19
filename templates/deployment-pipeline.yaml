@@ -142,21 +142,66 @@ Resources:
         Type: "S3"
         BuildSpec: |
           version: 0.2
+
+          phases:
+            install:
+              commands:
+                - echo Nothing to do in the install phase...
+            pre_build:
+              commands:
+                - echo setting gradlew build permissions...
+                - chmod +x gradlew
+            build:
+              commands:
+                - echo Build started on `date`
+                - ./gradlew build
+            post_build:
+              commands:
+                - echo Build completed on `date`
+          artifacts:
+            files:
+              - build/libs/market-cache-0.0.1-SNAPSHOT.jar
+              - Dockerfile
+      Environment:
+        ComputeType: "BUILD_GENERAL1_SMALL"
+        Image: "aws/codebuild/java:openjdk-8"
+        Type: "LINUX_CONTAINER"
+        EnvironmentVariables:
+          - Name: AWS_DEFAULT_REGION
+            Value: !Ref AWS::Region
+          - Name: REPOSITORY_URI
+            Value: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${Repository}
+      Name: !Ref AWS::StackName
+      ServiceRole: !Ref CodeBuildServiceRole
+
+  DockerBuildImage:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Artifacts:
+        Location: !Ref ArtifactBucket
+        Type: "S3"
+      Source:
+        Location: !Sub ${ArtifactBucket}/source.zip
+        Type: "S3"
+        BuildSpec: |
+          version: 0.2
           phases:
             pre_build:
               commands:
+                - echo "starting prebuild: ${REPOSITORY_URI}"
                 - $(aws ecr get-login)
-                - TAG="$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | head -c 8)"
+                - TAG="$(cat short-source-version.text)"
             build:
               commands:
-                - ./gradlew build
+                - echo Build started on `date`
                 - docker build --tag "${REPOSITORY_URI}:${TAG}" .
             post_build:
               commands:
                 - docker push "${REPOSITORY_URI}:${TAG}"
                 - printf '{"tag":"%s"}' $TAG > build.json
+                - echo Build completed on `date`
           artifacts:
-            files: 
+            files:
               - build.json
       Environment:
         ComputeType: "BUILD_GENERAL1_SMALL"
@@ -170,6 +215,7 @@ Resources:
       Name: !Ref AWS::StackName
       ServiceRole: !Ref CodeBuildServiceRole
 
+
   Pipeline:
     Type: AWS::CodePipeline::Pipeline
     Properties:
@@ -178,9 +224,9 @@ Resources:
         Type: S3
         Location: !Ref ArtifactBucket
       Stages:
-        - Name: Source
+        - Name: GitHub-Source-Code
           Actions:
-            - Name: App
+            - Name: Code
               ActionTypeId:
                 Category: Source
                 Owner: ThirdParty
@@ -192,7 +238,7 @@ Resources:
                 Branch: !Ref GitHubBranch
                 OAuthToken: !Ref GitHubToken
               OutputArtifacts:
-                - Name: App
+                - Name: ApplicationSourceCode
               RunOrder: 1
             - Name: Template
               ActionTypeId:
@@ -206,7 +252,7 @@ Resources:
               Configuration:
                 S3Bucket: !Ref TemplateBucket
                 S3ObjectKey: templates.zip
-        - Name: Build
+        - Name: JavaGradleBuild
           Actions:
             - Name: Build
               ActionTypeId:
@@ -217,7 +263,22 @@ Resources:
               Configuration:
                 ProjectName: !Ref CodeBuildProject
               InputArtifacts:
-                - Name: App
+                - Name: ApplicationSourceCode
+              OutputArtifacts:
+                - Name: ApplicationJar
+              RunOrder: 1
+        - Name: DockerBuild
+          Actions:
+            - Name: Build
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Version: 1
+                Provider: CodeBuild
+              Configuration:
+                ProjectName: !Ref DockerBuildImage
+              InputArtifacts:
+                - Name: ApplicationJar
               OutputArtifacts:
                 - Name: BuildOutput
               RunOrder: 1
