@@ -157,10 +157,12 @@ Resources:
                 - ./gradlew build
             post_build:
               commands:
+                - echo $CODEBUILD_RESOLVED_SOURCE_VERSION > source-version.text
                 - echo Build completed on `date`
           artifacts:
             files:
               - build/libs/market-cache-0.0.1-SNAPSHOT.jar
+              - source-version.text
               - Dockerfile
       Environment:
         ComputeType: "BUILD_GENERAL1_SMALL"
@@ -188,9 +190,9 @@ Resources:
           phases:
             pre_build:
               commands:
-                - echo "starting prebuild: ${REPOSITORY_URI}"
+                - echo starting prebuild for ${REPOSITORY_URI}
                 - $(aws ecr get-login)
-                - TAG="$(cat short-source-version.text)"
+                - TAG="$(cat source-version.text | head -c 8)"
             build:
               commands:
                 - echo Build started on `date`
