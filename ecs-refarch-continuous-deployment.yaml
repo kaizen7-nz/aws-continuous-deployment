@@ -42,7 +42,13 @@ Metadata:
         default: "Branch"
       GitHubToken:
         default: "Personal Access Token"
+      S3TemplateBucket:
+        default: "cf-templates-foylpe06cqiq-ap-southeast-2"
     ParameterGroups:
+      - Label:
+          default: S3 Configuration
+        Parameters:
+          - S3TemplateBucket
       - Label:
           default: GitHub Configuration
         Parameters:
@@ -55,7 +61,7 @@ Resources:
   Cluster:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: https://s3-ap-southeast-2.amazonaws.com/java-gradle-docker-cd/templates/ecs-cluster.yaml
+      TemplateURL: https://raw.githubusercontent.com/alphafoobar/ecs-refarch-continuous-deployment/master/templates/ecs-cluster.yaml
       Parameters:
         SourceSecurityGroup: !GetAtt LoadBalancer.Outputs.SecurityGroup
         Subnets: !GetAtt VPC.Outputs.Subnets
@@ -64,7 +70,7 @@ Resources:
   DeploymentPipeline:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: https://s3-ap-southeast-2.amazonaws.com/java-gradle-docker-cd/deployment-pipeline.yaml
+      TemplateURL: https://raw.githubusercontent.com/alphafoobar/ecs-refarch-continuous-deployment/master/templates/deployment-pipeline.yaml
       Parameters:
         Cluster: !GetAtt Cluster.Outputs.ClusterName
         GitHubUser: !Ref GitHubUser
@@ -77,7 +83,7 @@ Resources:
   LoadBalancer:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: https://s3-ap-southeast-2.amazonaws.com/java-gradle-docker-cd/templates/load-balancer.yaml
+      TemplateURL: https://raw.githubusercontent.com/alphafoobar/ecs-refarch-continuous-deployment/master/load-balancer.yaml
       Parameters:
         Subnets: !GetAtt VPC.Outputs.Subnets
         VpcId: !GetAtt VPC.Outputs.VpcId
@@ -85,7 +91,7 @@ Resources:
   VPC:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: https://s3-ap-southeast-2.amazonaws.com/java-gradle-docker-cd/templates/vpc.yaml
+      TemplateURL: https://raw.githubusercontent.com/alphafoobar/ecs-refarch-continuous-deployment/master/templates/vpc.yaml
       Parameters:
         Name: !Ref AWS::StackName
         VpcCIDR: 10.215.0.0/16
