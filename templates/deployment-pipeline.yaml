@@ -161,7 +161,7 @@ Resources:
                 - echo Build completed on `date`
           artifacts:
             files:
-              - service/build/install
+              - service/build/install/**/*
               - source-version.text
               - Dockerfile
       Environment:
