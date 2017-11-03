@@ -41,7 +41,7 @@ Resources:
       TaskDefinition: !Ref TaskDefinition
       LoadBalancers:
         - ContainerName: !Sub market-cache-app-${Tag}
-          ContainerPort: 8001
+          ContainerPort: 80
           TargetGroupArn: !Ref TargetGroup
 
   TaskDefinition:
@@ -54,4 +54,4 @@ Resources:
           Essential: true
           Memory: 300
           PortMappings:
-            - ContainerPort: 8001
+            - ContainerPort: 80
