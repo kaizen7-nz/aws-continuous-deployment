@@ -49,7 +49,7 @@ Resources:
     Properties:
       Family: !Sub ${AWS::StackName}-market-cache-app-${Tag}
       ContainerDefinitions:
-        - Name: java-spring-app
+        - Name: market-cache-app-${Tag}
           Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${Repository}:${Tag}
           Essential: true
           Memory: 128
