@@ -42,7 +42,7 @@ Resources:
       TaskDefinition: !Ref TaskDefinition
       LoadBalancers:
         - ContainerName: java-spring-app
-          ContainerPort: 80
+          ContainerPort: 8001
           TargetGroupArn: !Ref TargetGroup
 
   TaskDefinition:
@@ -54,13 +54,5 @@ Resources:
           Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${Repository}:${Tag}
           Essential: true
           Memory: 128
-          MountPoints:
-            - SourceVolume: my-vol
-              ContainerPath: /var/jars
           PortMappings:
-            - ContainerPort: 80
-          Environment:
-            - Name: Tag
-              Value: !Ref Tag
-      Volumes:
-        - Name: my-vol
+            - ContainerPort: 8001
