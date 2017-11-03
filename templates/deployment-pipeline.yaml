@@ -154,7 +154,7 @@ Resources:
             build:
               commands:
                 - echo Build started on `date`
-                - ./gradlew build
+                - ./gradlew check installDist
             post_build:
               commands:
                 - echo $CODEBUILD_RESOLVED_SOURCE_VERSION > source-version.text
