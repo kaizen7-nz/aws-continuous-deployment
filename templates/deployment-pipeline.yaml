@@ -161,7 +161,7 @@ Resources:
                 - echo Build completed on `date`
           artifacts:
             files:
-              - build/libs/market-cache-0.0.1-SNAPSHOT.jar
+              - service/build/install
               - source-version.text
               - Dockerfile
       Environment:
