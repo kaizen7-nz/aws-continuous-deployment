@@ -16,7 +16,6 @@ Parameters:
   Repository:
     Type: String
 
-
 Resources:
   ECSServiceRole:
     Type: AWS::IAM::Role
@@ -41,14 +40,14 @@ Resources:
       DesiredCount: !Ref DesiredCount
       TaskDefinition: !Ref TaskDefinition
       LoadBalancers:
-        - ContainerName: java-spring-app
+        - ContainerName: !Sub market-cache-app-${Tag}
           ContainerPort: 8001
           TargetGroupArn: !Ref TargetGroup
 
   TaskDefinition:
     Type: AWS::ECS::TaskDefinition
     Properties:
-      Family: !Sub ${AWS::StackName}-java-spring-app
+      Family: !Sub ${AWS::StackName}-market-cache-app-${Tag}
       ContainerDefinitions:
         - Name: java-spring-app
           Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${Repository}:${Tag}
