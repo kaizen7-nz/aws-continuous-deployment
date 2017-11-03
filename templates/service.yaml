@@ -52,6 +52,6 @@ Resources:
         - Name: !Sub market-cache-app-${Tag}
           Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${Repository}:${Tag}
           Essential: true
-          Memory: 128
+          Memory: 300
           PortMappings:
             - ContainerPort: 8001
