@@ -5,7 +5,6 @@ Parameters:
   Subnets:
     Type: List<AWS::EC2::Subnet::Id>
 
-
 Resources:
   SecurityGroup:
     Type: "AWS::EC2::SecurityGroup"
@@ -65,7 +64,6 @@ Resources:
       Actions:
         - TargetGroupArn: !Ref TargetGroup
           Type: forward
-
 
 Outputs:
   TargetGroup:

@@ -11,7 +11,6 @@ Parameters:
   Subnet2CIDR:
     Type: String
 
-
 Resources:
   VPC:
     Type: AWS::EC2::VPC
@@ -82,7 +81,6 @@ Resources:
     Properties:
       RouteTableId: !Ref RouteTable
       SubnetId: !Ref Subnet2
-
 
 Outputs:
   Subnets:

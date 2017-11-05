@@ -28,7 +28,6 @@ Parameters:
     Type: String
     Description: >
       Token for the user specified above. (https://github.com/settings/tokens)
-      
 
 Metadata:
   AWS::CloudFormation::Interface:
