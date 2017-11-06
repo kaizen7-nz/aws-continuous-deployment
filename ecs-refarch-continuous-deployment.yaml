@@ -6,10 +6,6 @@ Description: >
 
 
 Parameters:
-  S3TemplateBucket:
-    Type: String
-    Description: S3 Bucket containing templates.zip (requires versioning on)
-
   GitHubUser:
     Type: String
     Description: Your username on GitHub.
@@ -23,6 +19,16 @@ Parameters:
     Type: String
     Default: master
     Description: The branch of the repo to continuously deploy.
+
+  GitHubTemplate:
+    Type: String
+    Default: alphafoobar/ecs-refarch-continuous-deployment
+    Description: The repo name for the templates.
+
+  GitHubTemplateBranch:
+    Type: String
+    Default: master
+    Description: The branch of the repo for templates.
 
   GitHubToken:
     Type: String
@@ -40,13 +46,17 @@ Metadata:
         default: "Branch"
       GitHubToken:
         default: "Personal Access Token"
-      S3TemplateBucket:
-        default: "S3 Template Bucket"
+      GitHubTemplate:
+        default: "Template Repo"
+      GitHubTemplateBranch:
+        default: "Template Branch"
+
     ParameterGroups:
       - Label:
-          default: S3 Configuration
+          default: Template Configuration
         Parameters:
-          - S3TemplateBucket
+          - GitHubTemplate
+          - GitHubTemplateBranch
       - Label:
           default: GitHub Configuration
         Parameters:
@@ -59,7 +69,7 @@ Resources:
   Cluster:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: !Sub https://s3-ap-southeast-2.amazonaws.com/${S3TemplateBucket}/templates/ecs-cluster.yaml
+      TemplateURL: !Sub https://raw.githubusercontent.com/${GitHubTemplate}/${GitHubTemplateBranch}/templates/ecs-cluster.yaml
       Parameters:
         SourceSecurityGroup: !GetAtt LoadBalancer.Outputs.SecurityGroup
         Subnets: !GetAtt VPC.Outputs.Subnets
@@ -68,7 +78,7 @@ Resources:
   DeploymentPipeline:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: !Sub https://s3-ap-southeast-2.amazonaws.com/${S3TemplateBucket}/templates/deployment-pipeline.yaml
+      TemplateURL: !Sub https://raw.githubusercontent.com/${GitHubTemplate}/${GitHubTemplateBranch}/templates/deployment-pipeline.yaml
       Parameters:
         Cluster: !GetAtt Cluster.Outputs.ClusterName
         GitHubUser: !Ref GitHubUser
@@ -76,12 +86,13 @@ Resources:
         GitHubRepo: !Ref GitHubRepo
         GitHubBranch: !Ref GitHubBranch
         TargetGroup: !GetAtt LoadBalancer.Outputs.TargetGroup
-        TemplateBucket: !Ref S3TemplateBucket
+        GitHubTemplate: !Ref GitHubTemplate
+        GitHubBranchTemplate: !Ref GitHubBranchTemplate
 
   LoadBalancer:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: !Sub https://s3-ap-southeast-2.amazonaws.com/${S3TemplateBucket}/templates/load-balancer.yaml
+      TemplateURL: !Sub https://raw.githubusercontent.com/${GitHubTemplate}/${GitHubTemplateBranch}/templates/load-balancer.yaml
       Parameters:
         Subnets: !GetAtt VPC.Outputs.Subnets
         VpcId: !GetAtt VPC.Outputs.VpcId
@@ -89,7 +100,7 @@ Resources:
   VPC:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: !Sub https://s3-ap-southeast-2.amazonaws.com/${S3TemplateBucket}/templates/vpc.yaml
+      TemplateURL: !Sub https://raw.githubusercontent.com/${GitHubTemplate}/${GitHubTemplateBranch}/templates/vpc.yaml
       Parameters:
         Name: !Ref AWS::StackName
         VpcCIDR: 10.215.0.0/16
