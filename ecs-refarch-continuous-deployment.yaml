@@ -87,7 +87,7 @@ Resources:
         GitHubBranch: !Ref GitHubBranch
         TargetGroup: !GetAtt LoadBalancer.Outputs.TargetGroup
         GitHubTemplate: !Ref GitHubTemplate
-        GitHubTemplateBranch: !Ref GitHubTemplateBranch
+        GitHubBranchTemplate: !Ref GitHubBranchTemplate
 
   LoadBalancer:
     Type: AWS::CloudFormation::Stack
