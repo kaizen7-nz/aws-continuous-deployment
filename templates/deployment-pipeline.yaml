@@ -145,17 +145,18 @@ Resources:
           phases:
             install:
               commands:
-                - echo Saving commit version...
-                - TAG="$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | head -c 8)"
-                - echo "Tag is ${TAG}"
+                - echo Nothing to do in the install phase...
             pre_build:
               commands:
+                - TAG="$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | head -c 8)"
+                - echo "Tag is ${TAG}"
                 - echo setting gradlew build permissions...
                 - chmod +x gradlew
             build:
               commands:
                 - echo Build started on `date`
-                - ./gradlew check installDist -PTAG=$TAG
+                - echo "Running [./gradlew clean check installDist -PTAG=${TAG}]"
+                - ./gradlew clean check installDist -PTAG=$TAG
             post_build:
               commands:
                 - echo $CODEBUILD_RESOLVED_SOURCE_VERSION > source-version.text
