@@ -17,10 +17,7 @@ Parameters:
   Cluster:
     Type: String
 
-  GitHubTemplate:
-    Type: String
-
-  GitHubTemplateBranch:
+  TemplateBucket:
     Type: String
 
 Resources:
@@ -113,6 +110,8 @@ Resources:
             Statement:
               - Resource:
                   - !Sub arn:aws:s3:::${ArtifactBucket}/*
+                  - !Sub arn:aws:s3:::${TemplateBucket}
+                  - !Sub arn:aws:s3:::${TemplateBucket}/*
                 Effect: Allow
                 Action:
                   - s3:PutObject
@@ -248,17 +247,15 @@ Resources:
             - Name: Template
               ActionTypeId:
                 Category: Source
-                Owner: ThirdParty
+                Owner: AWS
                 Version: 1
-                Provider: GitHub
-              Configuration:
-                Owner: !Ref GitHubUser
-                Repo: !Ref GitHubTemplate
-                Branch: !Ref GitHubTemplateBranch
-                OAuthToken: !Ref GitHubToken
+                Provider: S3
               OutputArtifacts:
                 - Name: Template
               RunOrder: 1
+              Configuration:
+                S3Bucket: !Ref TemplateBucket
+                S3ObjectKey: templates.zip
         - Name: JavaGradleBuild
           Actions:
             - Name: Build
