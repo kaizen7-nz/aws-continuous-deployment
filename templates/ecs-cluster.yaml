@@ -106,10 +106,13 @@ Resources:
       AWS::CloudFormation::Init:
         config:
           commands:
-            01_add_instance_to_cluster:
-              command: !Sub echo ECS_CLUSTER=${Cluster} > /etc/ecs/ecs.config
-            02_register_logging_plugins:
-              command: echo ECS_AVAILABLE_LOGGING_DRIVERS=[“json-file”,”syslog”,”fluentd”,"awslog","splunk"] >> /etc/ecs/ecs.config
+            # Reference commands here: http://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-agent-config.html
+            01_register_logging_plugins:
+              command: echo ECS_AVAILABLE_LOGGING_DRIVERS='["json-file","splunk"]' > /etc/ecs/ecs.config
+            02_cleanup_faster_than_3h:
+              command: echo ECS_ENGINE_TASK_CLEANUP_WAIT_DURATION=20m >> /etc/ecs/ecs.config
+            03_add_instance_to_cluster:
+              command: !Sub echo ECS_CLUSTER=${Cluster} >> /etc/ecs/ecs.config
           files:
             "/etc/cfn/cfn-hup.conf":
               mode: 000400
