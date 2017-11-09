@@ -1,4 +1,10 @@
 Parameters:
+  SplunkToken:
+    Type: String
+
+  SplunkUrl:
+    Type: String
+
   GitHubRepo:
     Type: String
 
@@ -304,6 +310,8 @@ Resources:
                 ParameterOverrides: !Sub |
                   {
                     "Tag" : { "Fn::GetParam" : [ "BuildOutput", "build.json", "tag" ] },
+                    "SplunkToken" : "${SplunkToken}",
+                    "SplunkUrl" : "${SplunkUrl}",
                     "DesiredCount": "1",
                     "Cluster": "${Cluster}",
                     "TargetGroup": "${TargetGroup}",

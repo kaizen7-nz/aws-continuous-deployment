@@ -84,7 +84,7 @@ Resources:
       VPCZoneIdentifier: !Ref Subnets
       LaunchConfigurationName: !Ref LaunchConfiguration
       MinSize: !Ref ClusterSize
-      MaxSize: !Ref ClusterSize
+      MaxSize: 2  # MinInstancesInService must be less than the autoscaling group's MaxSize
       DesiredCapacity: !Ref ClusterSize
       Tags: 
         - Key: Name
@@ -107,7 +107,9 @@ Resources:
         config:
           commands:
             01_add_instance_to_cluster:
-                command: !Sub echo ECS_CLUSTER=${Cluster} > /etc/ecs/ecs.config
+              command: !Sub echo ECS_CLUSTER=${Cluster} > /etc/ecs/ecs.config
+            02_register_logging_plugins:
+              command: echo ECS_AVAILABLE_LOGGING_DRIVERS=[“json-file”,”syslog”,”fluentd”,"awslog","splunk"] > /etc/ecs/ecs.config
           files:
             "/etc/cfn/cfn-hup.conf":
               mode: 000400

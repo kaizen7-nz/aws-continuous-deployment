@@ -1,4 +1,10 @@
 Parameters:
+  SplunkToken:
+    Type: String
+
+  SplunkUrl:
+    Type: String
+
   Tag:
     Type: String
     Default: latest
@@ -55,3 +61,13 @@ Resources:
           Memory: 300
           PortMappings:
             - ContainerPort: 80
+          LogConfiguration:
+            LogDriver: splunk
+            Options:
+              splunk-format: raw
+              splunk-token: !Ref SplunkToken
+              splunk-url: !Ref SplunkUrl
+              env: Production
+              splunk-insecureskipverify: true
+
+

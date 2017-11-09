@@ -6,10 +6,18 @@ Description: >
 
 
 Parameters:
+  SplunkToken:
+    Type: String
+    Description: This is the token to log on the Splunk cloud
+
+  SplunkUrl:
+    Type: String
+    Description: This is the API for Splunk, generally on 8088
+
   S3Region:
     Type: String
     Default: "us-west-2"
-    AllowedValues : ["us-west-2", "us-west-1", "ap-south-1", "ap-northeast-1"]
+    AllowedValues : ["us-west-2", "us-west-1", "ap-south-1", "ap-southeast-1", "ap-southeast-2", "ap-northeast-1"]
     Description: S3 Region where bucket resides (us-west-2 is Oregon)
 
   S3TemplateBucket:
@@ -52,6 +60,11 @@ Metadata:
         default: "S3 Region"
     ParameterGroups:
       - Label:
+          default: Splunk stuff
+        Parameters:
+          - SplunkToken
+          - SplunkUrl
+      - Label:
           default: S3 Configuration
         Parameters:
           - S3TemplateBucket
@@ -86,6 +99,8 @@ Resources:
         GitHubBranch: !Ref GitHubBranch
         TargetGroup: !GetAtt LoadBalancer.Outputs.TargetGroup
         TemplateBucket: !Ref S3TemplateBucket
+        SplunkToken: !Ref SplunkToken
+        SplunkUrl: !Ref SplunkUrl
 
   LoadBalancer:
     Type: AWS::CloudFormation::Stack
