@@ -109,7 +109,7 @@ Resources:
             01_add_instance_to_cluster:
               command: !Sub echo ECS_CLUSTER=${Cluster} > /etc/ecs/ecs.config
             02_register_logging_plugins:
-              command: echo ECS_AVAILABLE_LOGGING_DRIVERS=[“json-file”,”syslog”,”fluentd”,"awslog","splunk"] > /etc/ecs/ecs.config
+              command: echo ECS_AVAILABLE_LOGGING_DRIVERS=[“json-file”,”syslog”,”fluentd”,"awslog","splunk"] >> /etc/ecs/ecs.config
           files:
             "/etc/cfn/cfn-hup.conf":
               mode: 000400
