@@ -26,7 +26,7 @@ Parameters:
 
   GitHubUser:
     Type: String
-    Description: Your username on GitHub.
+    Description: The GitHub owner/organisation of the repo to build.
 
   GitHubRepo:
     Type: String
@@ -47,7 +47,7 @@ Metadata:
   AWS::CloudFormation::Interface:
     ParameterLabels:
       GitHubUser:
-        default: "User"
+        default: "Owner"
       GitHubRepo:
         default: "Repo"
       GitHubBranch:

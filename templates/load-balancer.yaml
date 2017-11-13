@@ -9,7 +9,7 @@ Resources:
   SecurityGroup:
     Type: "AWS::EC2::SecurityGroup"
     Properties:
-      GroupDescription: !Sub ${AWS::StackName}-alb
+      GroupDescription: !Sub ${AWS::StackName}-autoloadbalancer
       SecurityGroupIngress:
         - CidrIp: "0.0.0.0/0"
           IpProtocol: "TCP"

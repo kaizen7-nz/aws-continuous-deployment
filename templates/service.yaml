@@ -46,16 +46,16 @@ Resources:
       DesiredCount: !Ref DesiredCount
       TaskDefinition: !Ref TaskDefinition
       LoadBalancers:
-        - ContainerName: !Sub market-cache-app-${Tag}
+        - ContainerName: !Sub ${AWS::StackName}-Container-${Tag}
           ContainerPort: 80
           TargetGroupArn: !Ref TargetGroup
 
   TaskDefinition:
     Type: AWS::ECS::TaskDefinition
     Properties:
-      Family: !Sub ${AWS::StackName}-market-cache-app-${Tag}
+      Family: !Sub ${AWS::StackName}-Task-${Tag}
       ContainerDefinitions:
-        - Name: !Sub market-cache-app-${Tag}
+        - Name: !Sub ${AWS::StackName}-Container-${Tag}
           Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${Repository}:${Tag}
           Essential: true
           Memory: 300
