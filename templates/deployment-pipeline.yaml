@@ -162,7 +162,7 @@ Resources:
               commands:
                 - echo Build started on `date`
                 - echo "Running [./gradlew clean check installDist -PTAG=${TAG}]"
-                - ./gradlew clean check installDist -PTAG=$TAG
+                - ./gradlew clean check installDist -PTAG=$TAG -PBRANCH=master
             post_build:
               commands:
                 - echo $CODEBUILD_RESOLVED_SOURCE_VERSION > source-version.text
