@@ -140,6 +140,7 @@ Resources:
       ImageId: !FindInMap [ AWSRegionToAMI, !Ref "AWS::Region", AMI ]
       InstanceType: !Ref InstanceType
       IamInstanceProfile: !Ref InstanceProfile
+      KeyName: !Ref 'KeyName' # See http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/quickref-ecs.html
       SecurityGroups:
         - !Ref SecurityGroup
       UserData:

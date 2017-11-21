@@ -1,11 +1,16 @@
 Description: >
-  This template uses AWS CodeBuild and AWS CodePipeline to
-  achieve continuous deployment of source code from a GitHub repository via a
-  Java Gradle build and then creates a Docker container 
-  to deploy on an Amazon EC2 Container Service cluster.
-
+  Contains AWS CodeBuild and AWS CodePipeline, with Java and Docker build steps.
 
 Parameters:
+  InstanceType:
+    Type: String
+    Default: t2.small
+    AllowedValues: [t2.nano, t2.micro, t2.small, t2.medium, t2.large, t2.xlarge, t2.2xlarge, m3.medium, m3.large, m3.xlarge, m3.2xlarge, m4.large, m4.xlarge, m4.2xlarge, m4.4xlarge, m4.10xlarge, m4.16xlarge]
+    Description: The size of the instance host that will run the Docker images.
+  KeyName:
+    Type: AWS::EC2::KeyPair::KeyName
+    Description: Name of an existing EC2 KeyPair to enable SSH access to the ECS instances.
+
   SplunkToken:
     Type: String
     Description: This is the token to log on the Splunk cloud
@@ -46,6 +51,8 @@ Parameters:
 Metadata:
   AWS::CloudFormation::Interface:
     ParameterLabels:
+      InstanceType:
+        default: "AWS Instance type"
       GitHubUser:
         default: "Owner"
       GitHubRepo:
@@ -59,6 +66,10 @@ Metadata:
       S3Region:
         default: "S3 Region"
     ParameterGroups:
+      - Label:
+          default: AWS container stuff
+        Parameters:
+          - InstanceType
       - Label:
           default: Splunk stuff
         Parameters:
@@ -83,6 +94,7 @@ Resources:
     Properties:
       TemplateURL: !Sub https://s3-${S3Region}.amazonaws.com/${S3TemplateBucket}/templates/ecs-cluster.yaml
       Parameters:
+        InstanceType: !Ref InstanceType
         SourceSecurityGroup: !GetAtt LoadBalancer.Outputs.SecurityGroup
         Subnets: !GetAtt VPC.Outputs.Subnets
         VpcId: !GetAtt VPC.Outputs.VpcId
