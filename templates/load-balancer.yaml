@@ -43,7 +43,7 @@ Resources:
       Protocol: HTTP
       Matcher:
         HttpCode: 200-299
-      HealthCheckIntervalSeconds: 60 # Set healthcheck interval large enough to allow system loading.
+      HealthCheckIntervalSeconds: 10
       HealthCheckPath: /1/ping
       HealthCheckProtocol: HTTP
       HealthCheckTimeoutSeconds: 5
