@@ -1,4 +1,7 @@
 Parameters:
+  ContainerName:
+    Type: String
+
   SplunkToken:
     Type: String
 
@@ -315,7 +318,8 @@ Resources:
                     "DesiredCount": "1",
                     "Cluster": "${Cluster}",
                     "TargetGroup": "${TargetGroup}",
-                    "Repository": "${Repository}"
+                    "Repository": "${Repository}",
+                    "ContainerName": "${ContainerName}"
                   }
               InputArtifacts:
                 - Name: Template

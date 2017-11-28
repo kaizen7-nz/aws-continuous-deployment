@@ -1,4 +1,14 @@
 Parameters:
+  ContainerName:
+    Type: String
+
+  # KeyName definition from:
+  # https://github.com/awslabs/aws-cloudformation-templates/blob/master/aws/services/AutoScaling/AutoScalingRollingUpdates.yaml
+  KeyName:
+    Description: Name of an existing EC2 KeyPair to enable SSH access to the instances
+    Type: AWS::EC2::KeyPair::KeyName
+    ConstraintDescription: must be the name of an existing EC2 KeyPair.
+
   InstanceType:
     Type: String
     Default: t2.small
@@ -71,6 +81,10 @@ Resources:
       SecurityGroupIngress:
         - SourceSecurityGroupId: !Ref SourceSecurityGroup
           IpProtocol: -1
+        - IpProtocol: tcp
+          FromPort: '22'
+          ToPort: '22'
+          CidrIp: 0.0.0.0/0
       VpcId: !Ref VpcId
 
   Cluster:
@@ -81,30 +95,45 @@ Resources:
   AutoScalingGroup:
     Type: AWS::AutoScaling::AutoScalingGroup
     Properties:
+      # Check health from load balancer:
+      # http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-as-group.html#cfn-as-group-healthchecktype
+      # HealthCheckType: ELB
+      # http://docs.aws.amazon.com/autoscaling/latest/userguide/as-add-elb-healthcheck.html
+      # HealthCheckGracePeriod: 300 # 300 Seconds: 5 Minutes.
       VPCZoneIdentifier: !Ref Subnets
       LaunchConfigurationName: !Ref LaunchConfiguration
       MinSize: !Ref ClusterSize
-      MaxSize: 2  # MinInstancesInService must be less than the autoscaling group's MaxSize
+      # MinInstancesInService must be less than the autoscaling group's MaxSize
+      MaxSize: 2
       DesiredCapacity: !Ref ClusterSize
       Tags: 
         - Key: Name
           Value: !Sub ${AWS::StackName} - ECS Host
           PropagateAtLaunch: true
+    # Creation policy configuration docs:
+    # http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-attribute-creationpolicy.html
     CreationPolicy:
       ResourceSignal:
+        Count: 1
         Timeout: PT15M
+    # Update policy configuration docs:
+    # http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-attribute-updatepolicy.html
     UpdatePolicy:
+      AutoScalingReplacingUpdate:
+        WillReplace: true
       AutoScalingRollingUpdate:
         MinInstancesInService: 1
         MaxBatchSize: 1
-        PauseTime: PT15M
+        PauseTime: PT30M # Needs to be long enough to roll out stack?
         WaitOnResourceSignals: true
 
   LaunchConfiguration:
     Type: AWS::AutoScaling::LaunchConfiguration
     Metadata:
       AWS::CloudFormation::Init:
-        config:
+        configSets:
+          full_install: [install_cfn, verify_instance_health]
+        install_cfn:
           commands:
             # Reference commands here: http://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-agent-config.html
             01_register_logging_plugins:
@@ -127,7 +156,7 @@ Resources:
                 [cfn-auto-reloader-hook]
                 triggers=post.update
                 path=Resources.ContainerInstances.Metadata.AWS::CloudFormation::Init
-                action=/opt/aws/bin/cfn-init -v --region ${AWS::Region} --stack ${AWS::StackName} --resource LaunchConfiguration
+                action=/opt/aws/bin/cfn-init -v --region ${AWS::Region} --stack ${AWS::StackName} --resource LaunchConfiguration --configsets full_install
           services:
             sysvinit:
               cfn-hup:
@@ -136,18 +165,30 @@ Resources:
                 files:
                   - /etc/cfn/cfn-hup.conf
                   - /etc/cfn/hooks.d/cfn-auto-reloader.conf
+        verify_instance_health:
+          commands:
+            # Stack health check idea from: https://blog.newrelic.com/2016/08/24/docker-health-check-instruction/
+            # Docker reference: https://docs.docker.com/engine/reference/builder/#healthcheck
+            ELBHealthCheck:
+              command: !Sub |
+                #!/bin/bash
+                until [ "$state" == "\"healthy\"" ]; do state=$(docker inspect --format='{{json .State.Health.Status}}' ${ContainerName}); sleep 10; done
+
     Properties:
       ImageId: !FindInMap [ AWSRegionToAMI, !Ref "AWS::Region", AMI ]
       InstanceType: !Ref InstanceType
       IamInstanceProfile: !Ref InstanceProfile
+      # KeyName see http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/quickref-ecs.html
+      # To create a key in AWS ec2 console: http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html#having-ec2-create-your-key-pair
+      KeyName: !Ref 'KeyName'
       SecurityGroups:
         - !Ref SecurityGroup
       UserData:
         "Fn::Base64": !Sub |
           #!/bin/bash
           yum install -y aws-cfn-bootstrap
-          /opt/aws/bin/cfn-init -v --region ${AWS::Region} --stack ${AWS::StackName} --resource LaunchConfiguration
-          /opt/aws/bin/cfn-signal -e $? --region ${AWS::Region} --stack ${AWS::StackName} --resource AutoScalingGroup
+          /opt/aws/bin/cfn-init -v --region ${AWS::Region} --stack ${AWS::StackId} --resource LaunchConfiguration --configsets full_install
+          /opt/aws/bin/cfn-signal -e $? --region ${AWS::Region} --stack ${AWS::StackId} --resource AutoScalingGroup
 
 Outputs:
   ClusterName:
