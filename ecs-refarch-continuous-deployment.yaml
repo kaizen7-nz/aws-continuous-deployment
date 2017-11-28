@@ -2,14 +2,29 @@ Description: >
   Contains AWS CodeBuild and AWS CodePipeline, with Java and Docker build steps.
 
 Parameters:
+  ContainerName:
+    Type: String
+    Description: Unique name for the Docker instance.
+
+  LoadBalancerName:
+    Type: String
+    Description: The name to give the load balancer DNS. Must be unique in your account.
+    MinLength: 4
+    MaxLength: 32
+    AllowedPattern: ^[A-Za-z0-9\-]*$
+    ConstraintDescription: >
+     Load balancer name must be unique, more than 4 characters, less than 33 characters and only include letters and numbers.
+
   InstanceType:
     Type: String
     Default: t2.small
     AllowedValues: [t2.nano, t2.micro, t2.small, t2.medium, t2.large, t2.xlarge, t2.2xlarge, m3.medium, m3.large, m3.xlarge, m3.2xlarge, m4.large, m4.xlarge, m4.2xlarge, m4.4xlarge, m4.10xlarge, m4.16xlarge]
     Description: The size of the instance host that will run the Docker images.
+
   KeyName:
-    Type: AWS::EC2::KeyPair::KeyName
     Description: Name of an existing EC2 KeyPair to enable SSH access to the ECS instances.
+    Type: AWS::EC2::KeyPair::KeyName
+    ConstraintDescription: must be the name of an existing EC2 KeyPair.
 
   SplunkToken:
     Type: String
@@ -51,6 +66,12 @@ Parameters:
 Metadata:
   AWS::CloudFormation::Interface:
     ParameterLabels:
+      ContainerName:
+        default: "Container name"
+      LoadBalancerName:
+        default: "Load balancer DNS name"
+      KeyName:
+        default: "AWS SSH KeyName"
       InstanceType:
         default: "AWS Instance type"
       GitHubUser:
@@ -69,6 +90,9 @@ Metadata:
       - Label:
           default: AWS container stuff
         Parameters:
+          - ContainerName
+          - LoadBalancerName
+          - KeyName
           - InstanceType
       - Label:
           default: Splunk stuff
@@ -94,10 +118,13 @@ Resources:
     Properties:
       TemplateURL: !Sub https://s3-${S3Region}.amazonaws.com/${S3TemplateBucket}/templates/ecs-cluster.yaml
       Parameters:
+        KeyName: !Ref KeyName
         InstanceType: !Ref InstanceType
+        ElasticLoadBalancer: !Ref LoadBalancerName
         SourceSecurityGroup: !GetAtt LoadBalancer.Outputs.SecurityGroup
         Subnets: !GetAtt VPC.Outputs.Subnets
         VpcId: !GetAtt VPC.Outputs.VpcId
+        ContainerName: !Ref ContainerName
 
   DeploymentPipeline:
     Type: AWS::CloudFormation::Stack
@@ -119,6 +146,7 @@ Resources:
     Properties:
       TemplateURL: !Sub https://s3-${S3Region}.amazonaws.com/${S3TemplateBucket}/templates/load-balancer.yaml
       Parameters:
+        ElasticLoadBalancer: !Ref LoadBalancerName
         Subnets: !GetAtt VPC.Outputs.Subnets
         VpcId: !GetAtt VPC.Outputs.VpcId
 
@@ -135,9 +163,9 @@ Resources:
 
 Outputs:
   ServiceUrl:
-    Description: The sample service that is being continuously deployed.
+    Description: Public URL for the loadbalancer.
     Value: !GetAtt LoadBalancer.Outputs.ServiceUrl
 
   PipelineUrl:
-    Description: The continuous deployment pipeline in the AWS Management Console.
+    Description: The continuous deployment build pipeline.
     Value: !GetAtt DeploymentPipeline.Outputs.PipelineUrl

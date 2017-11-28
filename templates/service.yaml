@@ -1,4 +1,7 @@
 Parameters:
+  ContainerName:
+    Type: String
+
   SplunkToken:
     Type: String
 
@@ -46,19 +49,20 @@ Resources:
       DesiredCount: !Ref DesiredCount
       TaskDefinition: !Ref TaskDefinition
       LoadBalancers:
-        - ContainerName: !Sub ${AWS::StackName}-Container-${Tag}
+        - ContainerName: !Ref ContainerName
           ContainerPort: 80
           TargetGroupArn: !Ref TargetGroup
 
   TaskDefinition:
     Type: AWS::ECS::TaskDefinition
     Properties:
-      Family: !Sub ${AWS::StackName}-Task-${Tag}
+      Family: !Sub ${AWS::StackName}-Task
       ContainerDefinitions:
-        - Name: !Sub ${AWS::StackName}-Container-${Tag}
+        - Name: !Ref ContainerName
           Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${Repository}:${Tag}
           Essential: true
-          Memory: 300
+          CPU: 10
+          Memory: 500
           PortMappings:
             - ContainerPort: 80
           LogConfiguration:
