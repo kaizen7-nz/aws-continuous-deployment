@@ -140,6 +140,7 @@ Resources:
         TemplateBucket: !Ref S3TemplateBucket
         SplunkToken: !Ref SplunkToken
         SplunkUrl: !Ref SplunkUrl
+        ContainerName: !Ref ContainerName
 
   LoadBalancer:
     Type: AWS::CloudFormation::Stack
