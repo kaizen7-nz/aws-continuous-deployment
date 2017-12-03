@@ -170,9 +170,9 @@ Resources:
               commands:
                 - echo $CODEBUILD_RESOLVED_SOURCE_VERSION > source-version.text
                 - echo Build completed on `date`
-            cache:
-              paths:
-                - '/root/.gradle/caches/**/*'
+          cache:
+            paths:
+              - '/root/.gradle/caches/**/*'
           artifacts:
             files:
               - service/build/install/**/*
