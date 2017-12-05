@@ -1,4 +1,7 @@
 Parameters:
+  ContainerName:
+    Type: String
+
   SplunkToken:
     Type: String
 
@@ -167,6 +170,9 @@ Resources:
               commands:
                 - echo $CODEBUILD_RESOLVED_SOURCE_VERSION > source-version.text
                 - echo Build completed on `date`
+          cache:
+            paths:
+              - '/root/.gradle/caches/**/*'
           artifacts:
             files:
               - service/build/install/**/*
@@ -187,6 +193,10 @@ Resources:
   DockerBuildProject:
     Type: AWS::CodeBuild::Project
     Properties:
+      # http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-codebuild-project.html#cfn-codebuild-project-cache
+      Cache:
+        Location: !Ref ArtifactBucket
+        Type: "S3"
       Artifacts:
         Location: !Ref ArtifactBucket
         Type: "S3"
@@ -315,7 +325,8 @@ Resources:
                     "DesiredCount": "1",
                     "Cluster": "${Cluster}",
                     "TargetGroup": "${TargetGroup}",
-                    "Repository": "${Repository}"
+                    "Repository": "${Repository}",
+                    "ContainerName": "${ContainerName}"
                   }
               InputArtifacts:
                 - Name: Template
